@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark" data-focus="off">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a0e14" id="metaThemeColor">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' https://unpkg.com; img-src data:; font-src data:; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; connect-src https://unpkg.com;">
+<title>Ассистент клинической коммуникации v1.0.0</title>
+<style>
+:root{
+  --bg:#0a0e14;--surface:#11161f;--surface-2:#171d27;--surface-3:#1f2733;
+  --border:#212a36;--border-soft:#181f29;
+  --text:#e8eef4;--text-2:#a4aeb9;--text-3:#6b7885;--text-4:#48525f;
+  --accent:#6ab0ff;--accent-soft:rgba(106,176,255,.10);
+  --green:#4cd48a;--green-soft:rgba(76,212,138,.10);
+  --gold:#e8c46a;--gold-soft:rgba(232,196,106,.10);
+  --purple:#b38cff;--purple-soft:rgba(179,140,255,.10);
+  --red:#ff6b7a;--red-soft:rgba(255,107,122,.10);
+  --r:12px;--r-sm:8px;--r-xs:6px;
+  --font:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  --mono:'SF Mono','JetBrains Mono','Fira Code',Consolas,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);--t:.22s;
+  --max:1080px;
+}
+[data-theme="light"]{
+  --bg:#fafbfc;--surface:#ffffff;--surface-2:#f4f6f9;--surface-3:#e9edf2;
+  --border:#e1e6ec;--border-soft:#eef1f5;
+  --text:#141a22;--text-2:#4b5560;--text-3:#7a8590;--text-4:#a4aeb8;
+  --accent:#1f5fc4;--accent-soft:rgba(31,95,196,.08);
+  --green:#0f7a4b;--green-soft:rgba(15,122,75,.08);
+  --gold:#8a6418;--gold-soft:rgba(138,100,24,.08);
+  --purple:#6740b8;--purple-soft:rgba(103,64,184,.08);
+  --red:#c5394a;--red-soft:rgba(197,57,74,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-soft);color:var(--text)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--accent);color:#fff;padding:8px 16px;z-index:999;border-radius:0 0 8px 0;font-weight:600}
+.skip-link:focus{left:8px}
+.wrap{max-width:var(--max);margin:0 auto;padding:20px 16px 72px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;padding:8px 4px 24px;margin-bottom:8px}
+.head-left{flex:1;min-width:0}
+.head h1{font-size:clamp(1.15rem,2.6vw,1.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.3;color:var(--text);display:flex;align-items:center;gap:10px}
+.head h1 .mark{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;font-size:15px;font-weight:700;flex-shrink:0}
+.head .sub{color:var(--text-2);font-size:.85rem;margin-top:6px;line-height:1.5}
+.head .meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:.72rem;color:var(--text-3);font-family:var(--mono)}
+.head-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--t) var(--ease);font-family:inherit}
+.icon-btn:hover{color:var(--text);border-color:var(--text-3);background:var(--surface-2)}
+.icon-btn[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.nav{display:flex;gap:2px;border-bottom:1px solid var(--border-soft);margin-bottom:24px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{background:none;border:none;color:var(--text-3);padding:11px 14px;font-size:.84rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:var(--t) var(--ease);font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.nav button:hover{color:var(--text-2)}
+.nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav button .count{font-size:.7rem;font-family:var(--mono);color:var(--text-4);padding:1px 6px;border-radius:8px;background:var(--surface-2);transition:var(--t)}
+.nav button.active .count{background:var(--accent-soft);color:var(--accent)}
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .3s var(--ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.progress-hero{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);padding:20px 22px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:var(--t) var(--ease)}
+.progress-hero.idle{background:transparent;border-color:transparent;padding:12px 4px;margin-bottom:12px}
+.progress-hero.idle .ring,.progress-hero.idle .stats{display:none}
+.progress-hero.idle .hint{display:block}
+.ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%}
+.ring .track{fill:none;stroke:var(--surface-3);stroke-width:6}
+.ring .fill{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:0 999;transition:stroke-dasharray .6s var(--ease), stroke .3s}
+.ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.stats{flex:1;min-width:0}
+.stats-row{display:flex;gap:24px;flex-wrap:wrap}
+.stats-item{display:flex;flex-direction:column;gap:2px}
+.stats-val{font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--text);letter-spacing:-.02em}
+.stats-lbl{font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em}
+.stats-val.green{color:var(--green)}
+.stats-val.gold{color:var(--gold)}
+.hint{display:none;font-size:.86rem;color:var(--text-3);padding:4px 0;line-height:1.5}
+.hint em{color:var(--accent);font-style:normal;font-weight:500}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;font-size:.84rem;font-weight:500;font-family:inherit;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:var(--t) var(--ease);white-space:nowrap;text-decoration:none}
+.btn:hover{background:var(--surface-3);color:var(--text);border-color:var(--text-3)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.success{background:var(--green);border-color:var(--green);color:#0a0e14}
+[data-theme="light"] .btn.success{color:#fff}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 12px;font-size:.8rem}
+.stage{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);margin-bottom:12px;overflow:hidden;transition:border-color var(--t) var(--ease)}
+.stage:hover{border-color:var(--border)}
+.stage.complete{border-color:var(--green-soft)}
+.stage-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;transition:background var(--t) var(--ease);user-select:none}
+.stage-head:hover{background:var(--surface-2)}
+.stage-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.stage-num{width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border-soft);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0;transition:var(--t) var(--ease)}
+.stage.has-progress .stage-num{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.stage.complete .stage-num{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.stage-info{flex:1;min-width:0}
+.stage-title{font-size:.95rem;font-weight:600;color:var(--text);line-height:1.35;letter-spacing:-.01em}
+.stage-desc{font-size:.8rem;color:var(--text-3);margin-top:2px;line-height:1.5}
+.stage-mini{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.stage-mini-count{font-family:var(--mono);font-size:.72rem;color:var(--text-4);opacity:0;transition:opacity var(--t);white-space:nowrap}
+.stage.has-progress .stage-mini-count{opacity:1}
+.stage-mini-bar{width:44px;height:3px;background:var(--surface-3);border-radius:2px;overflow:hidden}
+.stage-mini-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .5s var(--ease), background .3s}
+.stage.complete .stage-mini-fill{background:var(--green)}
+.stage-caret{color:var(--text-4);font-size:11px;transition:transform var(--t) var(--ease);flex-shrink:0}
+.stage.collapsed .stage-caret{transform:rotate(-90deg)}
+.stage-body{border-top:1px solid var(--border-soft);padding:8px 12px 14px;display:block}
+.stage.collapsed .stage-body{display:none}
+.skill{position:relative;padding:11px 14px 11px 18px;border-radius:var(--r-sm);margin-bottom:2px;transition:background .14s var(--ease);display:flex;gap:12px;align-items:flex-start}
+.skill:hover{background:var(--surface-2)}
+.skill::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--border);transition:background var(--t) var(--ease)}
+.skill[data-type="ext"]::before{background:var(--purple-soft)}
+.skill.checked::before{background:var(--green)}
+.skill-check{flex-shrink:0;width:20px;height:20px;border-radius:5px;border:1.5px solid var(--text-4);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.14s var(--ease);margin-top:1px;color:transparent;font-size:12px;font-weight:700}
+.skill-check:hover{border-color:var(--accent)}
+.skill-check:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.skill-check.checked{background:var(--green);border-color:var(--green);color:#0a0e14}
+[data-theme="light"] .skill-check.checked{color:#fff}
+.skill-body{flex:1;min-width:0}
+.skill-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.skill-id{font-family:var(--mono);font-size:.72rem;color:var(--text-4);font-weight:500;flex-shrink:0}
+.skill-name{font-size:.9rem;font-weight:500;color:var(--text);line-height:1.45;transition:color .14s}
+.skill.checked .skill-name{color:var(--text-3)}
+.skill-desc{font-size:.8rem;color:var(--text-3);margin-top:3px;line-height:1.5}
+.skill-why-btn{background:none;border:none;color:var(--text-4);cursor:pointer;font-size:.75rem;font-family:inherit;padding:3px 0;margin-top:5px;display:inline-flex;align-items:center;gap:4px;transition:color .14s}
+.skill-why-btn:hover{color:var(--accent)}
+.skill-why-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.skill-why-btn .chev{display:inline-block;transition:transform var(--t) var(--ease);font-size:8px}
+.skill.why-open .skill-why-btn .chev{transform:rotate(90deg)}
+.skill-why{display:none;margin-top:10px;padding:12px 14px;background:var(--bg);border:1px solid var(--border-soft);border-radius:var(--r-sm);font-size:.83rem;line-height:1.6}
+.skill.why-open .skill-why{display:block;animation:fadeIn var(--t) var(--ease)}
+.why-block{margin-bottom:8px}
+.why-block:last-child{margin-bottom:0}
+.why-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--text-4);margin-bottom:3px;display:block}
+.why-label.w{color:var(--accent)}
+.why-label.c{color:var(--green)}
+.why-text{color:var(--text-2);line-height:1.6}
+.card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);padding:20px 22px;margin-bottom:14px}
+.card h2{font-size:.98rem;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:-.01em}
+.card h3{font-size:.88rem;font-weight:600;color:var(--text);margin:16px 0 10px}
+.card p{color:var(--text-2);font-size:.86rem;line-height:1.65;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.74rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:6px}
+.input,.textarea{width:100%;padding:9px 12px;font-family:inherit;font-size:.88rem;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);transition:.14s}
+.input:focus,.textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.textarea{min-height:70px;resize:vertical;font-family:var(--mono);font-size:.78rem}
+.table-wrap{border:1px solid var(--border-soft);border-radius:var(--r-sm);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:540px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border-soft);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-weight:600;font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+tr:hover td{background:var(--surface-2)}
+.score{font-family:var(--mono);font-weight:700;letter-spacing:-.02em}
+.score.high{color:var(--green)}
+.score.mid{color:var(--gold)}
+.score.low{color:var(--red)}
+.row-actions{display:flex;gap:4px;justify-content:flex-end}
+.row-btn{padding:4px 10px;font-size:.72rem;border-radius:var(--r-xs);border:1px solid var(--border);background:var(--surface);color:var(--text-3);cursor:pointer;font-family:inherit;transition:.14s}
+.row-btn:hover{background:var(--surface-2);color:var(--text);border-color:var(--text-3)}
+.row-btn.del:hover{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+.empty{text-align:center;padding:48px 20px;color:var(--text-3);font-size:.86rem;line-height:1.6}
+.empty .ico{font-size:1.8rem;display:block;margin-bottom:8px;opacity:.5}
+.seed-preview{font-family:var(--mono);font-size:.74rem;background:var(--bg);border:1px solid var(--border-soft);border-radius:var(--r-sm);padding:14px 16px;color:var(--text-2);line-height:1.6;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.toasts{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));right:calc(20px + env(safe-area-inset-right,0px));z-index:2000;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 40px)}
+.toast{padding:11px 16px;border-radius:var(--r-sm);font-size:.83rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.4);border-left:3px solid var(--accent);animation:toastIn .3s var(--ease);max-width:380px;word-break:break-word}
+.toast.success{border-left-color:var(--green)}
+.toast.error{border-left-color:var(--red)}
+.toast.warning{border-left-color:var(--gold)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+[data-focus="on"] .progress-hero .ring,[data-focus="on"] .progress-hero .stats,[data-focus="on"] .stage-mini,[data-focus="on"] .nav-count{display:none !important}
+[data-focus="on"] .progress-hero{padding:10px 4px;background:transparent;border-color:transparent}
+.foot{margin-top:32px;padding-top:20px;border-top:1px solid var(--border-soft);text-align:center;font-size:.76rem;color:var(--text-4);font-family:var(--mono);line-height:1.7;word-break:break-all}
+.notice{border-left:3px solid var(--accent);background:var(--surface);padding:14px 18px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:14px 0;font-size:.88rem;color:var(--text-2);line-height:1.65}
+.notice.green{border-left-color:var(--green)}
+.notice.gold{border-left-color:var(--gold)}
+@media (max-width:640px){
+  .wrap{padding:12px 10px 48px}
+  .head h1{font-size:1.05rem}
+  .head h1 .mark{width:28px;height:28px;font-size:13px}
+  .nav button{padding:9px 10px;font-size:.78rem}
+  .progress-hero{padding:16px;gap:14px}
+  .ring{width:60px;height:60px}
+  .ring .pct{font-size:13px}
+  .stats-row{gap:16px}
+  .stats-val{font-size:.92rem}
+  .stage-head{padding:13px 14px;gap:10px}
+  .stage-num{width:30px;height:30px;font-size:12px}
+  .stage-title{font-size:.88rem}
+  .stage-desc{font-size:.74rem}
+  .stage-body{padding:6px 8px 10px}
+  .skill{padding:10px 10px 10px 14px;gap:10px}
+  .skill-name{font-size:.85rem}
+  .skill-desc{font-size:.76rem}
+  .card{padding:16px 16px}
+  th,td{padding:8px 10px;font-size:.78rem}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+@media print{
+  .head-actions,.nav,.actions,.btn,.skill-check,.skill-why-btn{display:none !important}
+  .skill-why{display:block !important;background:#fff;border:1px solid #ccc}
+  body{background:#fff;color:#000}
+  .stage,.card{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Перейти к содержимому</a>
+
+<div class="wrap">
+
+<header class="head">
+  <div class="head-left">
+    <h1><span class="mark">КК</span>Ассистент клинической коммуникации</h1>
+    <p class="sub">Структурированный чек-лист коммуникативных навыков для медицинской практики</p>
+    <div class="meta">
+      <span>v1.0.0</span><span>·</span>
+      <span>102 навыка</span><span>·</span>
+      <span>15 этапов</span><span>·</span>
+      <span>Seed IR · SHA-256</span>
+    </div>
+  </div>
+  <div class="head-actions">
+    <button class="icon-btn" id="focusBtn" data-action="toggle-focus" aria-pressed="false" title="Фокус-режим" aria-label="Фокус-режим">🎯</button>
+    <button class="icon-btn" id="themeBtn" data-action="toggle-theme" title="Тема" aria-label="Тема">🌓</button>
+  </div>
+</header>
+
+<nav class="nav" role="tablist">
+  <button class="active" data-action="tab" data-target="panel-checklist" role="tab" aria-selected="true">📋 Чек-лист</button>
+  <button data-action="tab" data-target="panel-history" role="tab" aria-selected="false">📜 История <span class="count" id="navCount">0</span></button>
+  <button data-action="tab" data-target="panel-seed" role="tab" aria-selected="false">🔐 Seed IR</button>
+  <button data-action="tab" data-target="panel-about" role="tab" aria-selected="false">ℹ️ О системе</button>
+</nav>
+
+<main id="main">
+
+<section class="panel active" id="panel-checklist" role="tabpanel">
+  <div class="progress-hero idle" id="progressHero">
+    <div class="ring">
+      <svg viewBox="0 0 72 72" aria-hidden="true"><circle class="track" cx="36" cy="36" r="30"/><circle class="fill" cx="36" cy="36" r="30" id="ringFill"/></svg>
+      <div class="pct" id="pctVal">0%</div>
+    </div>
+    <div class="stats">
+      <div class="stats-row">
+        <div class="stats-item"><div class="stats-val green" id="statDone">0</div><div class="stats-lbl">выполнено</div></div>
+        <div class="stats-item"><div class="stats-val" id="statTotal">102</div><div class="stats-lbl">всего</div></div>
+        <div class="stats-item"><div class="stats-val gold" id="statSplit">—</div><div class="stats-lbl">base / ext</div></div>
+      </div>
+    </div>
+    <div class="hint" id="progressHint">Отметьте первый навык, чтобы начать сессию. Прогресс сохраняется автоматически.</div>
+    <div class="actions">
+      <button class="btn ghost" data-action="reset-checklist" title="Сбросить">↺</button>
+      <button class="btn" data-action="export-csv" title="Экспорт CSV">CSV</button>
+      <button class="btn primary" data-action="save-session">💾 Сохранить сессию</button>
+    </div>
+  </div>
+  <div id="stagesContainer"></div>
+</section>
+
+<section class="panel" id="panel-history" role="tabpanel">
+  <div class="card">
+    <h2>История сессий</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <input type="text" class="input" id="historySearch" placeholder="Поиск по дате или Seed..." style="flex:1;min-width:180px">
+      <button class="btn danger" data-action="clear-history">Очистить</button>
+    </div>
+    <div id="historyContainer"><div class="empty"><span class="ico">📭</span>Пока нет сохранённых сессий</div></div>
+  </div>
+</section>
+
+<section class="panel" id="panel-seed" role="tabpanel">
+  <div class="card">
+    <h2>🔐 Seed IR — идентификатор сессии</h2>
+    <p>Seed IR — криптографический снимок состояния чек-листа с хешем SHA-256. Позволяет перенести сессию между устройствами, проверить целостность и зафиксировать момент времени без сервера.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn primary" data-action="export-seed">📤 Экспортировать</button>
+      <button class="btn" data-action="import-seed-trigger">📥 Импортировать</button>
+      <input type="file" id="seedFile" accept=".json" style="display:none">
+    </div>
+    <div id="seedWrap" style="display:none;margin-top:16px">
+      <h3>Предпросмотр</h3>
+      <div class="seed-preview" id="seedPreview"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn" data-action="copy-seed">📋 Копировать</button>
+        <button class="btn" data-action="download-seed">💾 Скачать .json</button>
+        <button class="btn danger" data-action="apply-seed">⚠️ Применить (заменит данные)</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🔏 Верификация хеша</h2>
+    <div class="form-group">
+      <label for="verifyInput">Вставьте Seed IR для проверки целостности</label>
+      <textarea id="verifyInput" class="textarea" placeholder="{ ... }"></textarea>
+    </div>
+    <button class="btn primary" data-action="verify-seed">🔍 Проверить</button>
+    <div id="verifyResult" style="margin-top:12px;font-size:.86rem"></div>
+  </div>
+</section>
+
+<section class="panel" id="panel-about" role="tabpanel">
+  <div class="card">
+    <h2>О системе</h2>
+    <p>Ассистент клинической коммуникации — структурированный чек-лист из 102 навыков, сгруппированных в 15 этапов клинического взаимодействия. Инструмент создан для врачей, которые хотят системно подходить к разговору с пациентом.</p>
+    <h3>Что внутри</h3>
+    <p>Пятнадцать этапов: от начала приёма до завершения консультации. Каждый этап разбит на конкретные навыки. Всего 102: 60 базовых и 42 расширенных. Каждый навык содержит пояснения «Зачем» и «Связь» — обоснование и взаимодействие с другими этапами.</p>
+    <h3>Как работает</h3>
+    <p>Открывается в браузере, без установки и без интернета. Прогресс сохраняется локально. Сессии можно сохранять, восстанавливать, экспортировать в CSV. Идентификатор сессии на базе SHA-256 позволяет проверить целостность при переносе. Есть печатная версия — Ctrl+P даёт чек-лист на бумаге.</p>
+    <h3>Методологическая основа</h3>
+    <p>Инструмент опирается на общепризнанные принципы клинической коммуникации, сформированные в медицинском образовании во второй половине XX века. Эти принципы описывают структуру клинического разговора как последовательность этапов: установление контакта, сбор информации, осмотр, объяснение, планирование, завершение. Идеи и методы не охраняются авторским правом. Все формулировки навыков, текстовые пояснения и код приложения — оригинальные.</p>
+    <h3>Ограничения</h3>
+    <div class="notice gold">
+      Инструмент — образовательный и методологический. Он не заменяет клиническое суждение врача, знание действующих клинических рекомендаций и формальное медицинское образование. Все формулировки носят справочный характер. Клинические решения принимает врач.
+    </div>
+    <h3>Лицензии</h3>
+    <p>Код — MIT License. Текстовый контент — CC BY-NC-SA 4.0. Обе лицензии открытые и допускают свободное некоммерческое использование с указанием авторства.</p>
+  </div>
+  <div class="card">
+    <h2>Технические характеристики</h2>
+    <table style="width:100%;font-size:.85rem">
+      <tr><td style="color:var(--text-3);padding:5px 0;width:140px">Версия</td><td>1.0.0</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Навыков</td><td>102 (60 base, 42 ext)</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Этапов</td><td>15</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Зависимости</td><td>0 (VK Bridge — опционально)</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Хранение</td><td>IndexedDB + localStorage</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Верификация</td><td>SHA-256 (Web Crypto API)</td></tr>
+      <tr><td style="color:var(--text-3);padding:5px 0">Автор</td><td>Холин Иван Алексеевич</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  Ассистент клинической коммуникации v1.0.0 · 102 навыка · 15 этапов<br>
+  Оригинальная разработка · 2026
+</footer>
+
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js" async></script>
+
+<script>
+(function(){
+'use strict';
+
+function $(s){return document.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+function esc(s){if(s===null||s===undefined)return '';return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function csvCell(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
+function debounce(fn,d){var t;return function(){var a=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(null,a)},d)}}
+function hasCrypto(){return !!(window.crypto&&window.crypto.subtle&&crypto.subtle.digest)}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16)})}
+function fmtDate(d){return new Date(d).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+async function sha256(msg){
+  if(!hasCrypto())throw new Error('Web Crypto недоступен');
+  var buf=new TextEncoder().encode(msg);
+  var h=await crypto.subtle.digest('SHA-256',buf);
+  return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+}
+
+function toast(msg,type){
+  type=type||'info';
+  var c=$('#toasts');if(!c)return;
+  var el=document.createElement('div');
+  el.className='toast '+type;
+  el.textContent=msg;
+  c.appendChild(el);
+  setTimeout(function(){
+    el.style.transition='opacity .3s, transform .3s';
+    el.style.opacity='0';
+    el.style.transform='translateY(8px)';
+    setTimeout(function(){el.remove()},320);
+  },3400);
+}
+
+function Storage(dbName){this.dbName=dbName;this.store='sessions';this.db=null}
+Storage.prototype.init=function(){
+  var self=this;
+  return new Promise(function(res,rej){
+    if(!('indexedDB' in window)){rej(new Error('IndexedDB недоступен'));return}
+    var req=indexedDB.open(self.dbName,1);
+    req.onupgradeneeded=function(e){
+      var db=e.target.result;
+      if(!db.objectStoreNames.contains(self.store))db.createObjectStore(self.store,{keyPath:'id'});
+    };
+    req.onsuccess=function(e){self.db=e.target.result;res()};
+    req.onerror=function(e){rej(e.target.error)};
+  });
+};
+Storage.prototype.add=function(d){
+  var self=this;
+  return new Promise(function(res,rej){
+    var tx=self.db.transaction(self.store,'readwrite');
+    var r=tx.objectStore(self.store).put(d);
+    r.onsuccess=function(){res(r.result)};
+    r.onerror=function(){rej(r.error)};
+  });
+};
+Storage.prototype.all=function(){
+  var self=this;
+  return new Promise(function(res,rej){
+    var tx=self.db.transaction(self.store,'readonly');
+    var r=tx.objectStore(self.store).getAll();
+    r.onsuccess=function(){res(r.result||[])};
+    r.onerror=function(){rej(r.error)};
+  });
+};
+Storage.prototype.del=function(id){
+  var self=this;
+  return new Promise(function(res,rej){
+    var tx=self.db.transaction(self.store,'readwrite');
+    var r=tx.objectStore(self.store).delete(id);
+    r.onsuccess=function(){res()};
+    r.onerror=function(){rej(r.error)};
+  });
+};
+Storage.prototype.clear=function(){
+  var self=this;
+  return new Promise(function(res,rej){
+    var tx=self.db.transaction(self.store,'readwrite');
+    var r=tx.objectStore(self.store).clear();
+    r.onsuccess=function(){res()};
+    r.onerror=function(){rej(r.error)};
+  });
+};
+
+var THEME_KEY='vx_comm_theme';
+function applyTheme(name){
+  document.documentElement.setAttribute('data-theme',name);
+  var btn=$('#themeBtn');
+  if(btn)btn.textContent=name==='dark'?'🌓':'☀️';
+  var meta=document.getElementById('metaThemeColor');
+  if(meta)meta.setAttribute('content',name==='dark'?'#0a0e14':'#fafbfc');
+}
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme')||'dark';
+  var next=cur==='dark'?'light':'dark';
+  applyTheme(next);
+  try{localStorage.setItem(THEME_KEY,next)}catch(e){}
+}
+function initTheme(){
+  var s='dark';
+  try{s=localStorage.getItem(THEME_KEY)||'dark'}catch(e){}
+  applyTheme(s);
+}
+
+function initVKBridge(){
+  if(typeof window.vkBridge==='undefined')return false;
+  try{
+    window.vkBridge.send('VKWebAppInit',{}).then(function(data){
+      if(data&&data.result){console.log('[VK] Mini App инициализировано')}
+    }).catch(function(err){console.warn('[VK] Init error:',err)});
+    return true;
+  }catch(e){return false}
+}
+function tryVKBridge(attempt){
+  attempt=attempt||0;
+  if(initVKBridge())return;
+  if(attempt<5)setTimeout(function(){tryVKBridge(attempt+1)},400);
+}
+
+var STAGES=[
+{id:1,name:'Начало приёма',desc:'Установление контакта, создание рабочей атмосферы',skills:[
+{s:'1.1',n:'Приветствие и представление',d:'Назвать себя, свою роль, узнать имя пациента',t:'core',
+ w:'Первые секунды приёма задают тон всему разговору. Пациент, не знающий, кто перед ним, не может оценить вашу роль и чувствует себя неуверенно.',
+ c:'Представление → Контакт: спокойное начало снимает первичное напряжение и открывает диалог.'},
+{s:'1.2',n:'Установление рабочего контакта',d:'Короткая беседа, снимающая формальность',t:'core',
+ w:'Формальный контакт без тепла не даёт пациенту раскрыться. Несколько фраз «ни о чём» снижают барьер и показывают, что вы видите человека, а не случай.',
+ c:'Контакт → Доверие: чем теплее начало, тем глубже пациент раскрывается дальше.'},
+{s:'1.3',n:'Объяснение хода приёма',d:'Что будет происходить, сколько займёт времени',t:'core',
+ w:'Неопределённость тревожит. Пациент, знающий план, чувствует контроль над ситуацией и легче переносит неприятные моменты.',
+ c:'План → Спокойствие: ясность снижает тревогу и экономит время на объяснения по ходу.'},
+{s:'1.4',n:'Получение согласия на осмотр',d:'Убедиться, что пациент готов и не возражает',t:'core',
+ w:'Согласие — не формальность, а момент, когда пациент становится участником, а не объектом. Это влияет на всю дальнейшую коммуникацию.',
+ c:'Согласие → Вовлечение: с первого шага пациент включён в процесс.'},
+{s:'1.5',n:'Выяснение ожиданий',d:'Что пациент ждёт от этого визита',t:'ext',
+ w:'Ожидания управляют восприятием. Пациент, ждавший одного, а получивший другое, уйдёт разочарованным, даже если помощь была качественной.',
+ c:'Ожидания → Объяснение: зная запрос, вы точнее выстраиваете разговор.'},
+{s:'1.6',n:'Оценка языкового барьера',d:'Нужен ли переводчик или упрощение',t:'ext',
+ w:'Если пациент не понимает речь, диалог становится односторонним. Адаптация языка на входе определяет качество всей консультации.',
+ c:'Барьер → Понимание: простая речь повышает усвоение информации.'}
+]},
+{id:2,name:'Выявление жалоб',desc:'Начало расспроса, свободное изложение',skills:[
+{s:'2.1',n:'Открытый вопрос о проблеме',d:'«Расскажите, что вас привело»',t:'core',
+ w:'Открытый вопрос передаёт пациенту инициативу. Человек, начавший с открытого вопроса, сообщает больше значимой информации, чем при анкетном опросе.',
+ c:'Открытый вопрос → Перспектива: пациент сам раскрывает то, что считает важным.'},
+{s:'2.2',n:'Не перебивать',d:'Дать высказаться, не вклиниваясь',t:'core',
+ w:'Прерывание обрывает мысль и заставляет пациента замкнуться. Большинство людей заканчивают основную мысль за пару минут, если дать им договорить.',
+ c:'Слушание → Полнота: непрерываемая речь раскрывает детали, которые иначе остались бы скрытыми.'},
+{s:'2.3',n:'Невербальное поощрение',d:'Кивки, зрительный контакт, открытая поза',t:'core',
+ w:'Внимание читается по телу. Даже при верных вопросах закрытая поза и бегающий взгляд разрушают доверие.',
+ c:'Невербалика → Доверие: открытая поза усиливает контакт без слов.'},
+{s:'2.4',n:'Пересказ услышанного',d:'Повторить ключевое своими словами',t:'core',
+ w:'Пересказ защищает от неверного понимания. Пациент может не поправить из вежливости, а вы уйдёте с ошибочной картиной.',
+ c:'Пересказ → Точность: каждое повторение снижает риск искажения.'},
+{s:'2.5',n:'Отражение чувств',d:'Назвать эмоцию, которую слышите',t:'ext',
+ w:'Эмоции несут информацию. Тревога может указывать на скрытый страх, раздражение — на прошлый негативный опыт. Игнорирование чувств — потеря данных.',
+ c:'Чувства → Контакт: признание эмоции укрепляет связь и открывает глубинные переживания.'},
+{s:'2.6',n:'Промежуточное обобщение',d:'Кратко подвести итог перед уточнениями',t:'ext',
+ w:'Обобщение структурирует поток и показывает, что вы услышали всё. Это естественный переход к деталям.',
+ c:'Обобщение → Структура: каждый блок обобщения упорядочивает разговор.'}
+]},
+{id:3,name:'Уточнение деталей',desc:'Конкретизация через направленные вопросы',skills:[
+{s:'3.1',n:'Локализация',d:'Где именно? Покажите',t:'core',
+ w:'Точное место — первая координата в диагностике. Просьба показать снижает языковой барьер и уточняет зону без терминов.',
+ c:'Локализация → Дифдиагностика: зона сужает круг возможных состояний.'},
+{s:'3.2',n:'Характер ощущения',d:'Какое — ноющее, пульсирующее, острое?',t:'core',
+ w:'Характер отражает процесс: пульсация — сосудистый компонент, ноющая — воспаление, острая — нерв. Это ключ к механизму.',
+ c:'Характер → Механизм: понимание характера определяет вектор поиска.'},
+{s:'3.3',n:'Длительность и периодичность',d:'Как давно? Постоянно или приступами?',t:'core',
+ w:'Время отделяет острое от хронического, транзиторное от стойкого. Это влияет на срочность действий.',
+ c:'Длительность → Тактика: временной паттерн определяет срочность.'},
+{s:'3.4',n:'Интенсивность',d:'По шкале 0–10',t:'core',
+ w:'Числовая оценка — база для сравнения между визитами. Субъективная шкала позволяет отслеживать динамику.',
+ c:'Интенсивность → Контроль: числовая оценка становится точкой отсчёта.'},
+{s:'3.5',n:'Провоцирующие факторы',d:'Что усиливает, что облегчает',t:'ext',
+ w:'Триггеры указывают на источник: холод, жевание, спонтанность — разные механизмы. Это дифференциальные маркеры.',
+ c:'Триггеры → Уточнение: каждый провокатор сужает гипотезу.'},
+{s:'3.6',n:'Сопутствующие признаки',d:'Отёк, температура, запах',t:'ext',
+ w:'Сопутствующие симптомы показывают, локальный процесс или системный. Лихорадка и отёк переводят ситуацию в неотложную.',
+ c:'Сопутствующие → Срочность: системные признаки меняют алгоритм.'}
+]},
+{id:4,name:'Общий анамнез',desc:'Фон, который влияет на всё',skills:[
+{s:'4.1',n:'Аллергии',d:'На препараты, латекс, йод',t:'core',
+ w:'Аллергия — прямой риск. Реакция может развиться за минуты. Сбор аллергоанамнеза — обязательный шаг перед любым вмешательством.',
+ c:'Аллергии → Безопасность: выбор допустимых материалов и препаратов.'},
+{s:'4.2',n:'Хронические заболевания',d:'Диабет, ССЗ, ВИЧ, гемофилия',t:'core',
+ w:'Хронические болезни меняют тактику: диабет — заживление, ССЗ — противопоказания, гемофилия — риск кровотечения.',
+ c:'Соматика → Ограничения: каждое заболевание сужает выбор вмешательств.'},
+{s:'4.3',n:'Лекарства',d:'Антикоагулянты, бисфосфонаты',t:'core',
+ w:'Взаимодействия опаснее самой процедуры. Антикоагулянты повышают риск кровотечения, бисфосфонаты — риск остеонекроза.',
+ c:'Лекарства → Коррекция: возможна замена или коррекция доз перед вмешательством.'},
+{s:'4.4',n:'Стоматологический опыт',d:'Прошлые визиты, осложнения анестезии',t:'core',
+ w:'Прошлый опыт определяет тревогу и ожидания. Осложнения анестезии в анамнезе — важный сигнал для выбора метода обезболивания.',
+ c:'Опыт → Комфорт: адаптация подхода с учётом прошлых эпизодов.'},
+{s:'4.5',n:'Социальный контекст',d:'Курение, алкоголь, профессия, гигиена',t:'ext',
+ w:'Социальные факторы влияют на прогноз и приверженность. Реалистичные рекомендации строятся с учётом реальной жизни.',
+ c:'Социум → Прогноз: план должен быть выполним в реальных условиях.'},
+{s:'4.6',n:'Наследственность',d:'Семейные заболевания зубочелюстной системы',t:'ext',
+ w:'Наследственность определяет предрасположенность к пародонтиту, кариесу, аномалиям прикуса.',
+ c:'Генетика → Профилактика: семейный анамнез формирует план наблюдения.'}
+]},
+{id:5,name:'Анамнез заболевания',desc:'Детали текущего состояния',skills:[
+{s:'5.1',n:'Хронология',d:'Последовательность событий',t:'core',
+ w:'Хронология выявляет триггеры и прогрессию. Без временной линии симптомы — набор без причинно-следственных связей.',
+ c:'Хронология → Причина: временные связи указывают на пусковой фактор.'},
+{s:'5.2',n:'Что уже делали',d:'Самолечение, визиты, препараты',t:'core',
+ w:'Самолечение может маскировать картину или усугублять состояние. Знание прошлых шагов предотвращает дублирование.',
+ c:'История → Тактика: что не сработало, не стоит пробовать снова.'},
+{s:'5.3',n:'Эффект предыдущего лечения',d:'Помогло или нет и почему',t:'core',
+ w:'Неэффективность — диагностическая информация. Либо диагноз был неверен, либо приверженность низкая, либо есть устойчивость.',
+ c:'Эффект → Коррекция: анализ неудач меняет стратегию.'},
+{s:'5.4',n:'Структурированная оценка боли',d:'По схеме: начало, провокация, качество, зона, сила, время',t:'ext',
+ w:'Систематический подход исключает пропуски. Каждый пункт отвечает на конкретный вопрос, вместе — полная картина.',
+ c:'Схема → Дифдиагностика: структурированный сбор снижает риск пропустить атипичное течение.'},
+{s:'5.5',n:'Влияние на жизнь',d:'Сон, питание, работа, активность',t:'ext',
+ w:'Качество жизни — клинически значимый параметр. Пациент, не спящий из-за боли, имеет иные показатели стресса и заживления.',
+ c:'Влияние → Приоритет: чем выше влияние, тем срочнее вмешательство.'},
+{s:'5.6',n:'Психологический фон',d:'Тревога, депрессия, страх',t:'ext',
+ w:'Тревога усиливает боль, депрессия снижает мотивацию. Психосоциальный контекст определяет, как пациент справится с планом.',
+ c:'Психология → Коммуникация: тревожный пациент требует иного темпа и тона.'}
+]},
+{id:6,name:'Физикальный осмотр',desc:'Клиническое исследование',skills:[
+{s:'6.1',n:'Внешний осмотр',d:'Симметрия, отёк, асимметрия',t:'core',
+ w:'Внешний осмотр даёт информацию до инструментов. Асимметрия и отёк могут указывать на воспаление или системный процесс.',
+ c:'Внешний осмотр → Локализация: видимые отклонения направляют внимание.'},
+{s:'6.2',n:'Пальпация лимфоузлов',d:'Поднижнечелюстные, шейные',t:'core',
+ w:'Увеличенные узлы — маркер инфекции или онкологии. Быстрый и информативный метод оценки системного ответа.',
+ c:'Лимфоузлы → Системность: увеличение указывает на вовлечение организма в целом.'},
+{s:'6.3',n:'Осмотр мягких тканей',d:'Слизистая, дёсны, язык, нёбо',t:'core',
+ w:'Онкологический скрининг слизистой — стандарт. Раннее выявление изменений критически влияет на прогноз.',
+ c:'Мягкие ткани → Скрининг: осмотр всей полости рта предотвращает пропуск онкопатологии.'},
+{s:'6.4',n:'Осмотр зубов',d:'Кариес, дефекты пломб, подвижность',t:'core',
+ w:'Прямой осмотр выявляет не только кариес, но и дефекты реставраций, трещины, подвижность.',
+ c:'Осмотр → План: выявленные дефекты определяют объём вмешательств.'},
+{s:'6.5',n:'Перкуссия',d:'Оценка болезненности при постукивании',t:'core',
+ w:'Перкуссия различает процессы в пульпе и периодонте. Простой тест с высокой диагностической ценностью.',
+ c:'Перкуссия → Локализация: разграничение пульпарного и периодонтального процесса.'},
+{s:'6.6',n:'Пальпация дёсен',d:'Болезненность, кровоточивость, карманы',t:'core',
+ w:'Пальпация выявляет карманы, невидимые при внешнем осмотре. Глубина определяет стадию процесса.',
+ c:'Пальпация → Стадирование: оценка пародонта определяет объём лечения.'},
+{s:'6.7',n:'Температурный тест',d:'Реакция на холод или горячее',t:'ext',
+ w:'Температурные тесты дают быструю оценку состояния пульпы. Реакция на холод — ранний признак, отсутствие — некроз.',
+ c:'Тест → Тактика: результат определяет необходимость эндодонтии.'},
+{s:'6.8',n:'Электроодонтодиагностика',d:'Числовая оценка возбудимости',t:'ext',
+ w:'ЭОД даёт числа для мониторинга. В отличие от температурного теста, позволяет отслеживать динамику.',
+ c:'ЭОД → Объективизация: числовые данные позволяют сравнивать состояние между визитами.'}
+]},
+{id:7,name:'Инструментальная диагностика',desc:'Дополнительные методы',skills:[
+{s:'7.1',n:'Прицельный снимок',d:'Назначение и интерпретация',t:'core',
+ w:'Прицельный снимок — золотой стандарт оценки периапикальных тканей. Выявляет то, что не видно клинически.',
+ c:'Снимок → Точность: подтверждение или опровержение гипотез.'},
+{s:'7.2',n:'Панорамный снимок',d:'Обзор всей зубочелюстной системы',t:'core',
+ w:'Панорама показывает всю систему: непрорезавшиеся зубы, кисты, пазухи, суставы.',
+ c:'Панорама → Системность: обзор предотвращает локальное мышление.'},
+{s:'7.3',n:'Объяснение необходимости снимка',d:'Зачем, какая доза',t:'core',
+ w:'Страх радиации — распространённый барьер. Объяснение реальных доз снижает тревожность и повышает согласие.',
+ c:'Объяснение → Согласие: информированный пациент принимает решение осознанно.'},
+{s:'7.4',n:'Компьютерная томография',d:'3D-диагностика при сложных случаях',t:'ext',
+ w:'3D-картина необходима при имплантации и сложной эндодонтии. Доза выше, поэтому показания должны быть обоснованы.',
+ c:'3D → Планирование: снижает риск осложнений при вмешательствах.'},
+{s:'7.5',n:'Фотодокументация',d:'Клинические фото',t:'ext',
+ w:'Фото — объективная база для сравнения. Инструмент коммуникации с пациентом и коллегами.',
+ c:'Фото → Документация: визуальная фиксация сохраняет состояние для истории.'},
+{s:'7.6',n:'Анализ окклюзии',d:'Артикуляционная бумага, контакты',t:'ext',
+ w:'Окклюзия — ключ к пониманию стираемости и дисфункции. Артикуляционная бумага визуализирует контакты.',
+ c:'Окклюзия → Долгосрочность: анализ контактов повышает прогноз реставраций.'},
+{s:'7.7',n:'Диагностические модели',d:'3D-сканирование, цифровой дизайн',t:'ext',
+ w:'Цифровые модели позволяют планировать результат и показывать его заранее. Повышает вовлечённость и точность.',
+ c:'Модели → Визуализация: пациент видит план, а не представляет его по описанию.'}
+]},
+{id:8,name:'Формулирование диагноза',desc:'Объяснение и визуализация',skills:[
+{s:'8.1',n:'Чёткая формулировка',d:'Название, стадия, осложнения',t:'core',
+ w:'Диагноз без формулировки — не диагноз. Чёткая формула включает нозологию, стадию, осложнения.',
+ c:'Формулировка → Документация: чёткая формула позволяет коллегам работать с тем же случаем.'},
+{s:'8.2',n:'Объяснение причин',d:'Почему возникла проблема',t:'core',
+ w:'Пациент, понимающий причину, легче принимает план. Без объяснения лечение воспринимается как произвольное.',
+ c:'Причины → Профилактика: понимание этиологии мотивирует к изменениям.'},
+{s:'8.3',n:'Визуализация',d:'Показать на снимке, фото, в зеркале',t:'core',
+ w:'Визуализация переводит абстрактный диагноз в конкретный образ. Увиденное запоминается лучше услышанного.',
+ c:'Визуализация → Понимание: образ повышает усвоение информации.'},
+{s:'8.4',n:'Прогноз без лечения',d:'Что будет, если ничего не делать',t:'core',
+ w:'Информация о последствиях — часть информированного согласия. Пациент имеет право знать, чем рискует.',
+ c:'Прогноз → Выбор: знание последствий делает решение осознанным.'},
+{s:'8.5',n:'Проверка понимания',d:'Попросить пересказать',t:'ext',
+ w:'«Всё понятно?» — плохая проверка: пациент скажет «да» из вежливости. Пересказ выявляет пробелы.',
+ c:'Проверка → Приверженность: правильно понятый диагноз — основа следования плану.'},
+{s:'8.6',n:'Документирование',d:'Запись с кодом МКБ',t:'ext',
+ w:'Документирование — юридическая и клиническая необходимость. Код обеспечивает унификацию.',
+ c:'Документация → Преемственность: коллеги видят ту же картину.'},
+{s:'8.7',n:'Дифференциальный диагноз',d:'Исключение альтернатив',t:'ext',
+ w:'ДД защищает от преждевременного закрытия поиска. Даже уверенный диагноз требует проверки.',
+ c:'ДД → Безопасность: исключение альтернатив снижает риск ошибки.'}
+]},
+{id:9,name:'Обсуждение плана',desc:'Совместное принятие решения',skills:[
+{s:'9.1',n:'Варианты лечения',d:'Минимум два, с плюсами и минусами',t:'core',
+ w:'Единственный вариант воспринимается как навязывание. Выбор делает пациента соучастником.',
+ c:'Варианты → Автономия: пациент принимает решение осознанно.'},
+{s:'9.2',n:'Объяснение этапов',d:'Что, сколько по времени, какие ощущения',t:'core',
+ w:'Неопределённость — источник тревоги. Знание этапов снижает страх и повышает готовность.',
+ c:'Этапы → Контроль: пациент, знающий, что дальше, сохраняет самообладание.'},
+{s:'9.3',n:'Риски и осложнения',d:'Честно о возможных побочных эффектах',t:'core',
+ w:'Умолчание о рисках — нарушение согласия. Честный разговор повышает доверие, а не снижает.',
+ c:'Риски → Доверие: прозрачность укрепляет альянс даже при неприятной информации.'},
+{s:'9.4',n:'Стоимость',d:'Полная сумма, этапы оплаты',t:'core',
+ w:'Финансовая неясность — частая причина отказа. Чёткая схема снимает скрытый барьер.',
+ c:'Стоимость → Доступность: прозрачная схема расширяет круг пациентов.'},
+{s:'9.5',n:'Информированное согласие',d:'Письменное согласие с подписью',t:'core',
+ w:'Согласие — защита обеих сторон. Документ фиксирует, что пациент был информирован и решил добровольно.',
+ c:'Согласие → Ответственность: документ формализует партнёрство.'},
+{s:'9.6',n:'Нетрадиционные методы',d:'Обсуждение, если пациент использует',t:'ext',
+ w:'Пациенты часто используют народные методы параллельно. Игнорирование создаёт риски, обсуждение — снижает.',
+ c:'Альтернативы → Безопасность: открытый разговор предотвращает опасные сочетания.'},
+{s:'9.7',n:'Второе мнение',d:'Предложение консультации другого специалиста',t:'ext',
+ w:'Предложение второго мнения — признак уверенности, а не слабости. Повышает доверие и снижает риск ошибки.',
+ c:'Второе мнение → Уверенность: пациент, имеющий право на проверку, менее склонен к конфликту.'},
+{s:'9.8',n:'Поэтапное планирование',d:'Разбивка по бюджету и срокам',t:'ext',
+ w:'Разбивка по этапам делает лечение доступным. Пациент видит последовательные шаги, а не общую сумму.',
+ c:'Планирование → Доступность: поэтапный подход снижает барьер стоимости.'}
+]},
+{id:10,name:'Проведение лечения',desc:'Коммуникация во время манипуляций',skills:[
+{s:'10.1',n:'Предупреждение о каждом шаге',d:'Что сейчас будет, какие ощущения',t:'core',
+ w:'Неожиданная боль воспринимается сильнее ожидаемой. Предупреждение снижает болевой порог.',
+ c:'Предупреждение → Контроль: пациент сохраняет чувство контроля.'},
+{s:'10.2',n:'Мониторинг состояния',d:'Постоянно спрашивать о самочувствии',t:'core',
+ w:'Внешнее спокойствие не означает отсутствия боли. Регулярные вопросы позволяют вовремя корректировать анестезию.',
+ c:'Мониторинг → Комфорт: непрерывный контроль предотвращает негативный опыт.'},
+{s:'10.3',n:'Сигнал остановки',d:'Договорённый жест для паузы',t:'core',
+ w:'Пациент в кресле ограничен в речи. Договорённый сигнал даёт гарантию контроля и снижает тревогу.',
+ c:'Сигнал → Доверие: гарантированная остановка — основа расслабленности.'},
+{s:'10.4',n:'Отвлекающая беседа',d:'Лёгкий разговор во время работы',t:'core',
+ w:'Отвлечение — доказанный метод снижения боли. Мозг не может одновременно обрабатывать разговор и болевой сигнал на одном уровне.',
+ c:'Беседа → Отвлечение: разговор снижает субъективное восприятие боли.'},
+{s:'10.5',n:'Объяснение неожиданностей',d:'Спокойно объяснить, если что-то пошло не так',t:'ext',
+ w:'Скрывать осложнение — путь к потере доверия. Спокойное объяснение в моменте сохраняет контроль.',
+ c:'Честность → Доверие: прозрачность в сложной ситуации укрепляет альянс.'},
+{s:'10.6',n:'Работа с тревогой',d:'Дыхание, паузы, релаксация',t:'ext',
+ w:'Тревога — реальное состояние, а не каприз. Техники релаксации и право на паузу позволяют завершить вмешательство.',
+ c:'Релаксация → Завершение: работа с тревогой позволяет довести процедуру до конца.'},
+{s:'10.7',n:'Работа с детьми',d:'Объяснить, показать, сделать',t:'ext',
+ w:'Ребёнок, понимающий, что будет, легче переносит процедуру. Позитивный опыт формирует отношение на всю жизнь.',
+ c:'Опыт → Отношение: позитивное детское воспоминание определяет отношение к лечению.'}
+]},
+{id:11,name:'Завершение процедуры',desc:'Коммуникация после манипуляций',skills:[
+{s:'11.1',n:'Объяснение результата',d:'Что сделано, как выглядит',t:'core',
+ w:'Пациент, не понимающий результат, не может его оценить. Объяснение фиксирует достижение.',
+ c:'Результат → Оценка: понимание результата позволяет адекватно оценить визит.'},
+{s:'11.2',n:'Показ в зеркале',d:'Пациент видит результат сам',t:'core',
+ w:'Визуальное подтверждение сильнее слов. Зеркало даёт прямое доказательство.',
+ c:'Зеркало → Удовлетворённость: увиденный результат закрывает вопрос качества.'},
+{s:'11.3',n:'Рекомендации по уходу',d:'Что можно и нельзя в ближайшие часы',t:'core',
+ w:'Правила после процедуры определяют исход. Несоблюдение простых рекомендаций может свести работу на нет.',
+ c:'Рекомендации → Результат: правильный уход — продолжение лечения.'},
+{s:'11.4',n:'Предупреждение о нормальных реакциях',d:'Что нормально, что нет',t:'core',
+ w:'Пациент, не предупреждённый о нормальных реакциях, примет их за осложнение. Предупреждение снижает тревогу.',
+ c:'Предупреждение → Спокойствие: информированный пациент не паникует.'},
+{s:'11.5',n:'Красные флаги',d:'Когда обращаться срочно',t:'core',
+ w:'Пациент должен знать, какие симптомы — норма, а какие — сигнал обратиться. Профилактика осложнений.',
+ c:'Флаги → Безопасность: раннее обращение предотвращает серьёзные осложнения.'},
+{s:'11.6',n:'Письменные инструкции',d:'Распечатка с рекомендациями',t:'ext',
+ w:'Пациенты забывают большую часть устной информации. Письменный лист сохраняет рекомендации.',
+ c:'Инструкции → Приверженность: письменные рекомендации повышают выполнение.'},
+{s:'11.7',n:'Питание',d:'Диетические рекомендации на период восстановления',t:'ext',
+ w:'Питание после вмешательства влияет на заживление. Рекомендации должны учитывать реальные привычки.',
+ c:'Питание → Заживление: адекватная диета ускоряет восстановление.'},
+{s:'11.8',n:'Фиксация результата',d:'Фото или видео для динамики',t:'ext',
+ w:'Финальное фото — объективное свидетельство результата. Полезно для динамики и обучения.',
+ c:'Фиксация → Динамика: объективное сравнение помогает отследить изменения.'}
+]},
+{id:12,name:'Следующие шаги',desc:'Организация дальнейшего ведения',skills:[
+{s:'12.1',n:'Назначение следующего визита',d:'Конкретная дата, время, цель',t:'core',
+ w:'«Позвоните, когда будет время» — не назначение. Конкретная дата снижает вероятность забвения.',
+ c:'Назначение → Непрерывность: конкретный визит превращает лечение в систему.'},
+{s:'12.2',n:'Напоминание',d:'Звонок или сообщение накануне',t:'core',
+ w:'Напоминание снижает процент неявок. Это экономит время и сохраняет непрерывность.',
+ c:'Напоминание → Эффективность: снижение неявок повышает результат.'},
+{s:'12.3',n:'Долгосрочное наблюдение',d:'График профилактических осмотров',t:'core',
+ w:'Лечение — не разовое вмешательство, а долгосрочный процесс. Регулярные осмотры снижают риск запущенных состояний.',
+ c:'Наблюдение → Профилактика: регулярные визиты предотвращают тяжёлые формы.'},
+{s:'12.4',n:'Передача специалисту',d:'Направление к профильному врачу',t:'ext',
+ w:'Границы специальности определяют качество помощи. Передача — не отказ, а обеспечение лучшего результата.',
+ c:'Передача → Специализация: направление повышает результат.'},
+{s:'12.5',n:'Домашнее задание',d:'Конкретные действия до следующего визита',t:'ext',
+ w:'Конкретные действия лучше абстрактных советов. «Чистить дважды по 2 минуты» — задача, «чистить зубы» — совет.',
+ c:'Задание → Приверженность: конкретное задание выполняется чаще.'},
+{s:'12.6',n:'Каналы связи',d:'Как связаться с клиникой между визитами',t:'ext',
+ w:'Пациент должен знать, куда обращаться при неожиданных симптомах. Прозрачные каналы снижают тревогу.',
+ c:'Каналы → Безопасность: доступность между визитами повышает безопасность.'}
+]},
+{id:13,name:'Профилактика',desc:'Обучение пациента',skills:[
+{s:'13.1',n:'Индивидуальная гигиена',d:'Техника чистки, ершики, ирригатор',t:'core',
+ w:'Гигиена — база профилактики. Но большинство чистит зубы неправильно: слишком быстро, без ершиков.',
+ c:'Гигиена → Профилактика: правильная техника снижает риск кариеса и пародонтита.'},
+{s:'13.2',n:'Подбор средств',d:'Щётка, паста, ополаскиватель',t:'core',
+ w:'Универсальных решений нет. Жёсткая щётка вредит дёснам, паста с фтором не нужна при флюорозе.',
+ c:'Средства → Эффективность: правильный инструмент делает гигиену эффективной.'},
+{s:'13.3',n:'Диета и кариес',d:'Частота приёма сахара, кислотные напитки',t:'core',
+ w:'Важна не «сладость», а частота. Пять маленьких конфет опаснее одной шоколадки.',
+ c:'Диета → Кариес: изменение частоты влияет на риск сильнее общего количества.'},
+{s:'13.4',n:'Фторирование',d:'Польза фтора, профессиональное нанесение',t:'core',
+ w:'Фтор доказанно снижает кариес. Профессиональное фторирование — простая и эффективная профилактика.',
+ c:'Фтор → Профилактика: фторирование — один из немногих методов с доказанной эффективностью.'},
+{s:'13.5',n:'Герметизация фиссур',d:'Профилактика кариеса жевательных зубов',t:'ext',
+ w:'Фиссуры — самое уязвимое место у детей. Герметизация снижает риск кариеса в первые годы после прорезывания.',
+ c:'Герметизация → Детство: вмешательство в правильном возрасте предотвращает многолетние проблемы.'},
+{s:'13.6',n:'Отказ от курения',d:'Влияние табака на дёсны, импланты, заживление',t:'ext',
+ w:'Курение повышает риск пародонтита и ухудшает прогноз имплантации. Честный разговор — часть лечения.',
+ c:'Курение → Прогноз: отказ от табака улучшает результаты любого вмешательства.'},
+{s:'13.7',n:'Спортивная защита',d:'Капы, защита от травм',t:'ext',
+ w:'Спортивные травмы зубов — распространённая причина обращения. Капы снижают риск травм.',
+ c:'Капы → Профилактика: спортивная защита предотвращает повреждения.'},
+{s:'13.8',n:'Вакцинация против ВПЧ',d:'Профилактика рака полости рта',t:'ext',
+ w:'ВПЧ — значимый фактор риска орофарингеального рака. Вакцинация — действенная профилактика.',
+ c:'Вакцинация → Онкопрофилактика: снижает риск ВПЧ-ассоциированных опухолей.'}
+]},
+{id:14,name:'Сложные ситуации',desc:'Коммуникация в нестандартных случаях',skills:[
+{s:'14.1',n:'Тревожный пациент',d:'Эмпатия, постепенное привыкание',t:'core',
+ w:'Тревога — реальное состояние, а не каприз. Эмпатия без обесценивания и постепенное привыкание позволяют работать.',
+ c:'Эмпатия → Работа: тревожный пациент, чувствующий принятие, сотрудничает.'},
+{s:'14.2',n:'Агрессивный пациент',d:'Снижение напряжения, активное слушание',t:'core',
+ w:'Агрессия часто следствие страха или боли. Активное слушание снижает напряжение быстрее, чем аргументы.',
+ c:'Снижение напряжения → Диалог: это открывает путь к конструктивному разговору.'},
+{s:'14.3',n:'Плохие новости',d:'Сообщение о неблагоприятном прогнозе',t:'core',
+ w:'Сообщение плохих новостей — особый навык. Правильная структура снижает травму для пациента и врача.',
+ c:'Структура → Доверие: правильное сообщение укрепляет альянс даже в тяжёлых ситуациях.'},
+{s:'14.4',n:'Жалобы',d:'Приём, извинение, план исправления',t:'core',
+ w:'Жалоба — возможность сохранить пациента и улучшить практику. Признание, извинение, план — три шага.',
+ c:'Приём жалобы → Лояльность: правильный ответ делает пациента лояльнее.'},
+{s:'14.5',n:'Пациенты с ОВЗ',d:'Адаптация коммуникации',t:'ext',
+ w:'ОВЗ требуют индивидуальной адаптации: письменные инструкции, больше времени, специальные сигналы.',
+ c:'Адаптация → Доступность: правильная адаптация делает помощь доступной для всех.'},
+{s:'14.6',n:'Нетрезвый пациент',d:'Отказ в лечении, объяснение причин',t:'ext',
+ w:'Лечение в состоянии опьянения — юридический и медицинский риск. Отказ должен быть чётким, без агрессии.',
+ c:'Отказ → Безопасность: правильный отказ защищает и пациента, и врача.'},
+{s:'14.7',n:'Родители детей',d:'Коммуникация через родителя, согласие',t:'ext',
+ w:'Ребёнок — не «маленький взрослый». Разговор идёт с родителем, но ребёнок тоже включён на своём уровне.',
+ c:'Родитель → Согласие: правильное распределение внимания снижает тревогу обоих.'}
+]},
+{id:15,name:'Завершение консультации',desc:'Финальные шаги',skills:[
+{s:'15.1',n:'Итоговое резюме',d:'Кратко повторить всё обсуждённое',t:'core',
+ w:'Итоговое резюме «сшивает» все этапы в единую картину. Пациент уходит с чётким пониманием.',
+ c:'Резюме → Понимание: единый пересказ формирует целостное впечатление.'},
+{s:'15.2',n:'Финальная проверка понимания',d:'Пациент пересказывает ключевое',t:'core',
+ w:'Финальная проверка — защита от иллюзии понимания. Пациент может уйти, не осознавая, что не понял главное.',
+ c:'Проверка → Безопасность: правильное понимание предотвращает ошибки дома.'},
+{s:'15.3',n:'Открытие для вопросов',d:'Есть ли вопросы, что осталось непонятным',t:'core',
+ w:'Вопрос «есть ли что-то ещё?» выявляет скрытые проблемы. Пациенты часто «берегут» важный вопрос до конца.',
+ c:'Вопросы → Полнота: финальная проверка полноты консультации.'},
+{s:'15.4',n:'Благодарность и прощание',d:'Тёплое завершение',t:'core',
+ w:'Тёплое прощание фиксирует альянс и оставляет позитивное послевкусие. Простая благодарность повышает вероятность возвращения.',
+ c:'Прощание → Возвращение: последняя фраза определяет общее впечатление.'},
+{s:'15.5',n:'Обратная связь',d:'Просьба оценить визит',t:'ext',
+ w:'Обратная связь — инструмент улучшения практики. Пациенты, которых просят оценить, ощущают партнёрство.',
+ c:'Обратная связь → Качество: постоянная оценка улучшает практику.'},
+{s:'15.6',n:'Информирование о связи',d:'Как связаться после визита',t:'ext',
+ w:'Пациент должен знать каналы связи. Это снижает тревогу и обеспечивает безопасность между визитами.',
+ c:'Каналы → Непрерывность: доступность между визитами сохраняет связь.'}
+]}
+];
+
+var TOTAL=STAGES.reduce(function(a,s){return a+s.skills.length},0);
+var CORE=0,EXT=0;
+STAGES.forEach(function(st){st.skills.forEach(function(sk){if(sk.t==='core')CORE++;else EXT++})});
+
+var APP={
+  version:'1.0.0',
+  db:'vanxo_clinical_comm_v1',
+  draftKey:'vx_comm_draft_v1',
+  checked:new Set(),
+  collapsed:new Set(),
+  whyOpen:new Set(),
+  lastSeed:null,
+  sessionCount:0
+};
+
+var store=new Storage(APP.db);
+
+var Crypto={
+  generate:async function(){
+    var skills=Array.from(APP.checked).sort();
+    var ts=Date.now();
+    var canonical=JSON.stringify({v:APP.version,skills:skills,ts:ts});
+    var hash=await sha256(canonical);
+    var env=JSON.stringify({v:APP.version,skills:skills,ts:ts,hash:hash});
+    return {hash:hash,short:hash.slice(0,16),env:env,count:skills.length,ts:ts};
+  },
+  verify:async function(str){
+    try{
+      var p=JSON.parse(str);
+      if(!p||typeof p!=='object')return {ok:false,reason:'not-object'};
+      if(typeof p.hash!=='string')return {ok:false,reason:'no-hash'};
+      if(!Array.isArray(p.skills))return {ok:false,reason:'no-skills'};
+      var canonical=JSON.stringify({v:p.v,skills:p.skills,ts:p.ts});
+      var rehash=await sha256(canonical);
+      return {ok:rehash===p.hash,data:p,reason:rehash===p.hash?'ok':'hash-mismatch'};
+    }catch(e){return {ok:false,reason:'parse-error'}}
+  }
+};
+
+var Draft={
+  save:function(){
+    try{
+      localStorage.setItem(APP.draftKey,JSON.stringify({
+        checked:Array.from(APP.checked),
+        collapsed:Array.from(APP.collapsed),
+        whyOpen:Array.from(APP.whyOpen)
+      }));
+    }catch(e){}
+  },
+  load:function(){
+    try{
+      var raw=localStorage.getItem(APP.draftKey);
+      if(!raw)return false;
+      var d=JSON.parse(raw);
+      if(Array.isArray(d.checked))APP.checked=new Set(d.checked);
+      if(Array.isArray(d.collapsed))APP.collapsed=new Set(d.collapsed);
+      if(Array.isArray(d.whyOpen))APP.whyOpen=new Set(d.whyOpen);
+      return true;
+    }catch(e){return false}
+  }
+};
+
+var Render={
+  checklist:function(){
+    var c=$('#stagesContainer');
+    if(!c)return;
+    c.innerHTML='';
+    STAGES.forEach(function(stage){
+      var done=stage.skills.filter(function(sk){return APP.checked.has(sk.s)}).length;
+      var isCollapsed=APP.collapsed.has(stage.id);
+      var isComplete=done===stage.skills.length;
+      var hasProgress=done>0;
+      var wrapper=document.createElement('div');
+      wrapper.className='stage'+(isCollapsed?' collapsed':'')+(isComplete?' complete':'')+(hasProgress&&!isComplete?' has-progress':'');
+      wrapper.setAttribute('data-stage-id',stage.id);
+      var pct=Math.round((done/stage.skills.length)*100);
+      var html='';
+      html+='<div class="stage-head" data-action="toggle-stage" data-stage="'+stage.id+'" role="button" tabindex="0" aria-expanded="'+(!isCollapsed)+'">';
+      html+='<div class="stage-num">'+stage.id+'</div>';
+      html+='<div class="stage-info"><div class="stage-title">'+esc(stage.name)+'</div><div class="stage-desc">'+esc(stage.desc)+'</div></div>';
+      html+='<div class="stage-mini"><span class="stage-mini-count">'+done+' / '+stage.skills.length+'</span><div class="stage-mini-bar"><div class="stage-mini-fill" style="width:'+pct+'%"></div></div></div>';
+      html+='<span class="stage-caret">▼</span></div>';
+      html+='<div class="stage-body">';
+      stage.skills.forEach(function(sk){
+        var isChecked=APP.checked.has(sk.s);
+        var isWhyOpen=APP.whyOpen.has(sk.s);
+        html+='<div class="skill'+(isChecked?' checked':'')+(isWhyOpen?' why-open':'')+'" data-skill="'+sk.s+'" data-type="'+sk.t+'">';
+        html+='<div class="skill-check'+(isChecked?' checked':'')+'" data-action="toggle-skill" data-skill="'+sk.s+'" role="checkbox" aria-checked="'+isChecked+'" tabindex="0" aria-label="'+esc(sk.n)+'">✓</div>';
+        html+='<div class="skill-body">';
+        html+='<div class="skill-head"><span class="skill-id">'+esc(sk.s)+'</span><span class="skill-name">'+esc(sk.n)+'</span></div>';
+        html+='<div class="skill-desc">'+esc(sk.d)+'</div>';
+        html+='<button class="skill-why-btn" data-action="toggle-why" data-skill="'+sk.s+'" type="button"><span class="chev">▶</span> '+(isWhyOpen?'Скрыть пояснение':'Зачем этот навык?')+'</button>';
+        html+='<div class="skill-why"><div class="why-block"><span class="why-label w">Зачем</span><div class="why-text">'+esc(sk.w)+'</div></div><div class="why-block"><span class="why-label c">Связь</span><div class="why-text">'+esc(sk.c)+'</div></div></div>';
+        html+='</div></div>';
+      });
+      html+='</div>';
+      wrapper.innerHTML=html;
+      c.appendChild(wrapper);
+    });
+    this.progress();
+  },
+  progress:function(){
+    var done=APP.checked.size;
+    var pct=Math.round((done/TOTAL)*100);
+    var hero=$('#progressHero');
+    var ring=$('#ringFill');
+    var pctEl=$('#pctVal');
+    var hint=$('#progressHint');
+    var circ=2*Math.PI*30;
+    if(done===0){
+      if(hero)hero.classList.add('idle');
+      if(pctEl)pctEl.textContent='0%';
+      if(ring)ring.style.strokeDasharray='0 999';
+      if(hint)hint.style.display='block';
+      return;
+    }
+    if(hero)hero.classList.remove('idle');
+    if(pctEl)pctEl.textContent=pct+'%';
+    if(ring){
+      var dash=(pct/100)*circ;
+      ring.style.strokeDasharray=dash+' '+(circ-dash);
+      ring.style.stroke=pct===100?'var(--green)':'var(--accent)';
+    }
+    var d=$('#statDone');if(d)d.textContent=done;
+    var t=$('#statTotal');if(t)t.textContent=TOTAL;
+    var sp=$('#statSplit');if(sp)sp.textContent=CORE+' / '+EXT;
+  },
+  navCount:function(){
+    var el=$('#navCount');
+    if(el)el.textContent=APP.sessionCount;
+  },
+  history:async function(){
+    var sessions=[];
+    try{sessions=await store.all()}catch(e){}
+    var c=$('#historyContainer');
+    if(!c)return;
+    if(!sessions.length){
+      c.innerHTML='<div class="empty"><span class="ico">📭</span>Пока нет сохранённых сессий</div>';
+      return;
+    }
+    var search=($('#historySearch')?$('#historySearch').value:'').toLowerCase();
+    sessions.sort(function(a,b){return b.ts-a.ts});
+    var filtered=sessions.filter(function(s){
+      if(search&&!(String(s.dateStr||'').toLowerCase().indexOf(search)>-1||String(s.seedShort||'').toLowerCase().indexOf(search)>-1))return false;
+      return true;
+    });
+    if(!filtered.length){
+      c.innerHTML='<div class="empty"><span class="ico">🔍</span>Ничего не найдено</div>';
+      return;
+    }
+    var html='<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Прогресс</th><th>Seed</th><th></th></tr></thead><tbody>';
+    filtered.forEach(function(s){
+      var cls=s.score>=80?'high':(s.score>=50?'mid':'low');
+      html+='<tr><td>'+esc(s.dateStr)+'</td>';
+      html+='<td class="score '+cls+'">'+s.done+' / '+s.total+' <span style="opacity:.5;font-weight:400">('+s.score+'%)</span></td>';
+      html+='<td style="font-family:var(--mono);font-size:.72rem;color:var(--text-3)">'+esc(s.seedShort||'—')+'</td>';
+      html+='<td><div class="row-actions">';
+      html+='<button class="row-btn" data-action="load-session" data-id="'+s.id+'">Загрузить</button>';
+      html+='<button class="row-btn del" data-action="del-session" data-id="'+s.id+'">Удалить</button>';
+      html+='</div></td></tr>';
+    });
+    html+='</tbody></table></div>';
+    c.innerHTML=html;
+  }
+};
+
+var Actions={
+  'tab':function(t){
+    var target=t.dataset.target;
+    $$('.nav button').forEach(function(b){
+      b.classList.toggle('active',b.dataset.target===target);
+      b.setAttribute('aria-selected',b.dataset.target===target?'true':'false');
+    });
+    $$('.panel').forEach(function(p){p.classList.toggle('active',p.id===target)});
+    if(target==='panel-history')Render.history();
+    if(target==='panel-seed')Actions._refreshSeed();
+  },
+  'toggle-theme':function(){toggleTheme()},
+  'toggle-focus':function(t){
+    var cur=document.documentElement.getAttribute('data-focus');
+    var next=cur==='on'?'off':'on';
+    document.documentElement.setAttribute('data-focus',next);
+    t.setAttribute('aria-pressed',next==='on'?'true':'false');
+    toast(next==='on'?'Фокус-режим включён':'Фокус-режим выключен');
+  },
+  'toggle-stage':function(t){
+    var sid=parseInt(t.dataset.stage,10);
+    var wrapper=t.closest('.stage');
+    if(!wrapper)return;
+    var isCollapsed=APP.collapsed.has(sid);
+    if(isCollapsed){
+      APP.collapsed.delete(sid);
+      wrapper.classList.remove('collapsed');
+      t.setAttribute('aria-expanded','true');
+    }else{
+      APP.collapsed.add(sid);
+      wrapper.classList.add('collapsed');
+      t.setAttribute('aria-expanded','false');
+    }
+    Draft.save();
+  },
+  'toggle-skill':function(t){
+    var sk=t.dataset.skill;
+    if(!sk)return;
+    var item=t.closest('.skill');
+    if(APP.checked.has(sk)){
+      APP.checked.delete(sk);
+      if(item)item.classList.remove('checked');
+      t.classList.remove('checked');
+      t.setAttribute('aria-checked','false');
+    }else{
+      APP.checked.add(sk);
+      if(item)item.classList.add('checked');
+      t.classList.add('checked');
+      t.setAttribute('aria-checked','true');
+    }
+    Render.progress();
+    Actions._updateStageMeta(sk);
+    Draft.save();
+  },
+  '_updateStageMeta':function(skId){
+    var stageId=parseInt(skId.split('.')[0],10);
+    var stage=STAGES.find(function(s){return s.id===stageId});
+    if(!stage)return;
+    var wrapper=$('.stage[data-stage-id="'+stageId+'"]');
+    if(!wrapper)return;
+    var done=stage.skills.filter(function(s){return APP.checked.has(s.s)}).length;
+    var pct=Math.round((done/stage.skills.length)*100);
+    var isComplete=done===stage.skills.length;
+    var hasProgress=done>0;
+    wrapper.classList.toggle('complete',isComplete);
+    wrapper.classList.toggle('has-progress',hasProgress&&!isComplete);
+    var cnt=wrapper.querySelector('.stage-mini-count');
+    if(cnt)cnt.textContent=done+' / '+stage.skills.length;
+    var fill=wrapper.querySelector('.stage-mini-fill');
+    if(fill)fill.style.width=pct+'%';
+  },
+  'toggle-why':function(t){
+    var sk=t.dataset.skill;
+    var item=t.closest('.skill');
+    if(!item)return;
+    var isOpen=APP.whyOpen.has(sk);
+    if(isOpen){
+      APP.whyOpen.delete(sk);
+      item.classList.remove('why-open');
+      t.innerHTML='<span class="chev">▶</span> Зачем этот навык?';
+    }else{
+      APP.whyOpen.add(sk);
+      item.classList.add('why-open');
+      t.innerHTML='<span class="chev">▶</span> Скрыть пояснение';
+    }
+    Draft.save();
+  },
+  'reset-checklist':function(){
+    if(!confirm('Сбросить все отметки?'))return;
+    APP.checked.clear();
+    Draft.save();
+    Render.checklist();
+    toast('Чек-лист сброшен');
+  },
+  'save-session':async function(){
+    if(APP.checked.size===0){toast('Отметьте хотя бы один навык','error');return}
+    if(!hasCrypto()){toast('Seed IR недоступен: Web Crypto не поддерживается','error');return}
+    var seed;
+    try{seed=await Crypto.generate()}
+    catch(e){toast('Ошибка seed: '+e.message,'error');return}
+    var session={
+      id:uuid(),
+      ts:seed.ts,
+      dateStr:fmtDate(seed.ts),
+      done:seed.count,
+      total:TOTAL,
+      score:Math.round((seed.count/TOTAL)*100),
+      checked:Array.from(APP.checked),
+      seedShort:seed.short,
+      seedEnv:seed.env
+    };
+    try{await store.add(session)}
+    catch(e){toast('Ошибка сохранения: '+e.message,'error');return}
+    APP.lastSeed=seed.env;
+    APP.sessionCount++;
+    Render.navCount();
+    toast('Сессия сохранена · '+seed.short,'success');
+    Actions._refreshSeed();
+  },
+  'export-csv':function(){
+    var rows=['ID,Навык,Описание,Тип,Статус,Зачем,Связь'];
+    STAGES.forEach(function(st){
+      st.skills.forEach(function(sk){
+        rows.push([
+          csvCell(sk.s),csvCell(sk.n),csvCell(sk.d),
+          csvCell(sk.t==='core'?'Базовый':'Расширенный'),
+          csvCell(APP.checked.has(sk.s)?'Выполнено':'Не выполнено'),
+          csvCell(sk.w),csvCell(sk.c)
+        ].join(','));
+      });
+    });
+    var blob=new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='clinical-comm-checklist-'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+    toast('CSV экспортирован');
+  },
+  'clear-history':async function(){
+    if(!confirm('Удалить ВСЕ сохранённые сессии?'))return;
+    try{await store.clear()}
+    catch(e){toast('Ошибка: '+e.message,'error');return}
+    APP.sessionCount=0;
+    Render.navCount();
+    Render.history();
+    toast('История очищена');
+  },
+  'del-session':async function(t){
+    if(!confirm('Удалить эту сессию?'))return;
+    try{await store.del(t.dataset.id)}
+    catch(e){toast('Ошибка: '+e.message,'error');return}
+    APP.sessionCount=Math.max(0,APP.sessionCount-1);
+    Render.navCount();
+    Render.history();
+    toast('Сессия удалена');
+  },
+  'load-session':async function(t){
+    var sessions=[];
+    try{sessions=await store.all()}catch(e){}
+    var s=sessions.find(function(x){return String(x.id)===String(t.dataset.id)});
+    if(!s)return;
+    APP.checked=new Set(s.checked||[]);
+    APP.lastSeed=s.seedEnv||null;
+    Draft.save();
+    Render.checklist();
+    Actions._refreshSeed();
+    toast('Сессия загружена: '+(s.seedShort||''));
+    Actions.tab({dataset:{target:'panel-checklist'}});
+  },
+  'export-seed':async function(){
+    if(!hasCrypto()){toast('Web Crypto недоступен','error');return}
+    try{
+      var seed=await Crypto.generate();
+      APP.lastSeed=seed.env;
+      Actions._refreshSeed();
+      toast('Seed IR создан · '+seed.short,'success');
+    }catch(e){toast('Ошибка: '+e.message,'error')}
+  },
+  '_refreshSeed':function(){
+    var wrap=$('#seedWrap');
+    var prev=$('#seedPreview');
+    if(!wrap||!prev)return;
+    if(!APP.lastSeed){wrap.style.display='none';return}
+    wrap.style.display='block';
+    try{
+      var obj=JSON.parse(APP.lastSeed);
+      prev.textContent=JSON.stringify(obj,null,2);
+    }catch(e){prev.textContent=APP.lastSeed}
+  },
+  'import-seed-trigger':function(){
+    var f=$('#seedFile');
+    if(f)f.click();
+  },
+  'copy-seed':async function(){
+    if(!APP.lastSeed){toast('Сначала сгенерируйте seed','error');return}
+    try{await navigator.clipboard.writeText(APP.lastSeed);toast('Seed скопирован')}
+    catch(e){
+      var ta=document.createElement('textarea');
+      ta.value=APP.lastSeed;
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try{document.execCommand('copy');toast('Seed скопирован')}
+      catch(err){toast('Не удалось скопировать','error')}
+      ta.remove();
+    }
+  },
+  'download-seed':function(){
+    if(!APP.lastSeed){toast('Нет seed','error');return}
+    var blob=new Blob([APP.lastSeed],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='clinical-comm-seed-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+  },
+  'apply-seed':async function(){
+    if(!APP.lastSeed)return;
+    var res=await Crypto.verify(APP.lastSeed);
+    if(!res.ok){if(!confirm('⚠️ Хеш не совпадает. Импортировать всё равно?'))return}
+    if(!res.data||!Array.isArray(res.data.skills)){toast('Неверный формат seed','error');return}
+    APP.checked=new Set(res.data.skills);
+    Draft.save();
+    Render.checklist();
+    toast('Применено: '+res.data.skills.length+' навыков'+(res.ok?'':' (с нарушением целостности)'),res.ok?'success':'warning');
+  },
+  'verify-seed':async function(){
+    var val=$('#verifyInput')?$('#verifyInput').value.trim():'';
+    if(!val)return;
+    if(!hasCrypto()){toast('Web Crypto недоступен','error');return}
+    var res=await Crypto.verify(val);
+    var out=$('#verifyResult');
+    if(!out)return;
+    if(res.ok){
+      out.innerHTML='<div style="color:var(--green);font-weight:600">✓ Хеш верифицирован. Целостность подтверждена.</div>'
+        +'<div style="color:var(--text-3);font-size:.8rem;margin-top:4px">Навыков: '+res.data.skills.length+'</div>';
+    }else{
+      out.innerHTML='<div style="color:var(--red);font-weight:600">✗ Хеш не совпадает. Данные повреждены или изменены.</div>'
+        +'<div style="color:var(--text-3);font-size:.8rem;margin-top:4px">Причина: '+esc(res.reason)+'</div>';
+    }
+  }
+};
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-action]');
+  if(!t)return;
+  var action=t.dataset.action;
+  if(Actions[action])Actions[action](t);
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')return;
+  if(e.key==='Enter'||e.key===' '){
+    var t=e.target.closest('[data-action]');
+    if(t&&t.getAttribute('role')&&t.tagName!=='BUTTON'&&t.tagName!=='A'&&t.tagName!=='INPUT'&&t.tagName!=='TEXTAREA'){
+      e.preventDefault();
+      var action=t.dataset.action;
+      if(Actions[action])Actions[action](t);
+    }
+  }
+});
+
+var dHist=debounce(function(){Render.history()},250);
+
+document.addEventListener('DOMContentLoaded',async function(){
+  initTheme();
+  tryVKBridge(0);
+
+  var hs=$('#historySearch');
+  if(hs)hs.addEventListener('input',dHist);
+
+  var sf=$('#seedFile');
+  if(sf)sf.addEventListener('change',async function(e){
+    var f=e.target.files[0];
+    if(!f)return;
+    try{
+      var txt=await f.text();
+      APP.lastSeed=txt;
+      Actions._refreshSeed();
+      toast('Файл загружен. Проверьте и примените.');
+    }catch(err){toast('Ошибка чтения: '+err.message,'error')}
+    e.target.value='';
+  });
+
+  try{await store.init()}
+  catch(e){console.warn('IndexedDB:',e)}
+
+  Draft.load();
+  Render.checklist();
+  Render.progress();
+
+  try{
+    var all=await store.all();
+    APP.sessionCount=all.length;
+  }catch(e){APP.sessionCount=0}
+  Render.navCount();
+
+  if(!hasCrypto()){
+    toast('Web Crypto API недоступен: Seed IR будет отключён.','warning',8000);
+  }
+
+  console.log('%c Ассистент клинической коммуникации v1.0.0 · 102 навыка · 15 этапов ','background:linear-gradient(135deg,#6ab0ff,#b38cff);color:#fff;padding:4px 12px;border-radius:4px;font-weight:700');
+});
+})();
+</script>
+</body>
+</html>
